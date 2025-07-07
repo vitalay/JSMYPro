@@ -117,7 +117,7 @@ header h1 {
 .progress__cover-bar{
 
 position: absolute;
-width: 50%;
+transition: all 1s;
 height: 5px;
 background: #5051f9;
 border-radius: 4px

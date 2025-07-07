@@ -3,8 +3,18 @@
 let habbits = [];
 const HABBIT_KEY = 'HABBIT_KEY';
 
-/* utils */
+/* page */
+const page = {
+  menu: document.querySelector('.menu__list'), // ← исправил селектор: нужен класс!
+  header: {
+    h1: document.querySelector('.h1'),
+    progressPercent: document.querySelector('.progress__percent'),
+    progressCoverBar: document.querySelector('.progress__cover-bar')
 
+  }
+};
+
+/* utils */
 function loadData() {
   const habbitsString = localStorage.getItem(HABBIT_KEY);
   const habbitArray = JSON.parse(habbitsString);
@@ -17,7 +27,57 @@ function saveData() {
   localStorage.setItem(HABBIT_KEY, JSON.stringify(habbits));
 }
 
+/* render */
+function rerenderMenu(activeHabbit) {
+  if (!activeHabbit)  return;
+  
+  page.menu.innerHTML = '';
+  for (const habbit of habbits) {
+    const existed = document.querySelector(`[menu-habbit-id="${habbit.id}"]`);
+    if (!existed) {
+      const element = document.createElement('button');
+      element.setAttribute('menu-habbit-id', habbit.id);
+      element.classList.add('menu__item');
+      element.addEventListener('click', () => rerender(habbit.id))
+      element.innerHTML = `<img src="./images/${habbit.icon}.svg" alt="${habbit.name}" />`;
+
+      if (activeHabbit.id === habbit.id) {
+        element.classList.add('menu__item_active');
+      }
+
+      page.menu.appendChild(element);
+      continue;
+    }
+
+    if (activeHabbit.id === habbit.id) {
+      existed.classList.add('menu__item_active');
+    } else {
+      existed.classList.remove('menu__item_active');
+    }
+  }
+}
+function rerenderHead(activeHabbit) {
+  if (!activeHabbit) {
+    return;
+  }
+  page.header.h1.innerText = activeHabbit.name;
+  const progress = activeHabbit.days.length / activeHabbit.target > 1
+    ? 100
+    : activeHabbit.days.length / activeHabbit.target * 100;
+  page.header.progressPercent.innerText = progress.toFixed(0) + '%';
+  page.header.progressCoverBar.setAttribute('style', `width: ${progress}%`);
+  
+}  
+
+function rerender(activeHabbitId) {
+  const activeHabbit = habbits.find(habbit => habbit.id === activeHabbitId);
+  rerenderMenu(activeHabbit);
+  rerenderHead(activeHabbit)
+
+}
+
 (() => {
   loadData();
-
-})()
+    rerender(habbits[0].id);
+  
+})();
