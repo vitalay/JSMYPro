@@ -17,15 +17,48 @@ const page = {
   }
 };
 
+
+
 /* utils */
+// function loadData() {
+//   const habbitsString = localStorage.getItem(HABBIT_KEY);
+//   const habbitArray = JSON.parse(habbitsString);
+//   if (Array.isArray(habbitArray)) {
+//     habbits = habbitArray;
+//   }
+// }
+
+
 function loadData() {
   const habbitsString = localStorage.getItem(HABBIT_KEY);
   const habbitArray = JSON.parse(habbitsString);
-  if (Array.isArray(habbitArray)) {
+  if (Array.isArray(habbitArray) && habbitArray.length > 0) {
     habbits = habbitArray;
+  } else {
+    // Если в localStorage пусто — подставляем дефолтные
+    habbits = [
+      {
+        id: 1,
+        icon: "sport",
+        name: "Отжимания",
+        target: 10,
+        days: [
+          { comment: "Второй день уже проще" },
+          { comment: "Первый подход всегда даётся тяжело" }
+        ]
+      },
+      {
+        id: 2,
+        icon: "food",
+        name: "Правильное питание",
+        target: 10,
+        days: [
+          { comment: "Круто!" }
+        ]
+      }
+    ];
   }
 }
-
 function saveData() {
   localStorage.setItem(HABBIT_KEY, JSON.stringify(habbits));
 }
@@ -89,6 +122,7 @@ function rerenderContent(activeHabbit) {
   }
   page.content.nextDay.innerHTML = `День ${activeHabbit.days.length + 1}`
 } 
+
 
 
 function rerender(activeHabbitId) {
