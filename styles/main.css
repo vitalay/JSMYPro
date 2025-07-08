@@ -220,7 +220,7 @@ cursor: pointgr;
 }
 
 .cover_hidden {
-  /* display: none; */
+  display: none;
 }
 .popup {
   background: #FFFFFF;
