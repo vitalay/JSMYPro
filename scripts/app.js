@@ -18,7 +18,7 @@ const page = {
   },
   popup: {
     index: document.getElementById('add-habbit-popup'),
-    iconField: document.querySelector('.popup__form input[name="icon"]') 
+    iconField: document.querySelector('.popup__form input[name="icon"]')
   }
 };
 
@@ -75,11 +75,47 @@ function togglePopup() {
   }
 }
 
+function resetForm(form, fields) {
+  for (const field of fields) {
+    form[field].value = '';
+  }
+}
+
+function validateAndGetFormData(form, fields) {
+  const formData = new FormData(form);
+  const res = {}; // Результат проверки
+
+  for (const field of fields) {
+    const fieldValue = formData.get(field);
+    form[field].classList.remove('error');
+    if (!fieldValue) {
+      form[field].classList.add('error');
+      res[field] = false; // Не прошёл
+    } else {
+      res[field] = true; // Всё ок
+    }
+    res[field] = fieldValue
+  }
+  let isValid = true;
+  for (const field of fields) {
+    if (!res[field]) {
+      isValid = false
+    }
+  }
+  if (!isValid) {
+    return
+  }
+  return res;
+}
+
+
+
+
 
 /* render */
 function rerenderMenu(activeHabbit) {
- 
-  
+
+
   page.menu.innerHTML = '';
   for (const habbit of habbits) {
     const existed = document.querySelector(`[menu-habbit-id="${habbit.id}"]`);
@@ -106,15 +142,15 @@ function rerenderMenu(activeHabbit) {
   }
 }
 function rerenderHead(activeHabbit) {
-  
+
   page.header.h1.innerText = activeHabbit.name;
   const progress = activeHabbit.days.length / activeHabbit.target > 1
     ? 100
     : activeHabbit.days.length / activeHabbit.target * 100;
   page.header.progressPercent.innerText = progress.toFixed(0) + '%';
   page.header.progressCoverBar.setAttribute('style', `width: ${progress}%`);
-  
-} 
+
+}
 function rerenderContent(activeHabbit) {
   // Очищаем контейнер с днями
   page.content.daysContainer.innerHTML = '';
@@ -134,7 +170,7 @@ function rerenderContent(activeHabbit) {
     page.content.daysContainer.appendChild(element);
   }
   page.content.nextDay.innerHTML = `День ${activeHabbit.days.length + 1}`
-} 
+}
 
 
 
@@ -153,30 +189,22 @@ function rerender(activeHabbitId) {
 /* work with days */
 function addDays(event) {
   event.preventDefault();
-
-  const form = event.target;
-  const data = new FormData(form);
-  const comment = data.get('comment');
-
-  form['comment'].classList.remove('error');
-
-  if (!comment) {
-    form['comment'].classList.add('error');
-    return; // Остановить если пусто
+  const data = validateAndGetFormData(event.target, ['comment'])
+  if (!data) {
+    return
   }
-
   // Добавляем день к активной привычке
   habbits = habbits.map(habbit => {
     if (habbit.id === globalActiveHabbitId) {
       return {
         ...habbit,
-        days: habbit.days.concat([{ comment }])
+        days: habbit.days.concat([{ comment: data.comment }])
       };
     }
     return habbit;
   });
 
-  form['comment'].value = ''; // Очищаем поле
+  resetForm(event.target, ['comment'])
   saveData();
   rerender(globalActiveHabbitId);
 }
@@ -206,10 +234,31 @@ function setIcon(context, icon) {
   context.classList.add('icon_active');
 }
 
+function addHabbit(event) {
+  event.preventDefault()
+  event.preventDefault();
+  const data = validateAndGetFormData(event.target, ['name', 'icon', 'target'])
+  if (!data) {
+    return
+  }
+  const maxId = habbits.reduce((acc, habbit) => acc > habbit.id ? acc : habbit.id, 0)
+  habbits.push({
+    id: maxId + 1,
+    name: data.name,
+    target: data.target,
+    icon: data.icon,
+    days: []
+  })
+  resetForm(event.target, ['name', 'target']);
+  togglePopup()
+  saveData()
+  rerender(maxId + 1);
+}
 
- 
+
+
 (() => {
   loadData();
-    rerender(habbits[0].id);
+  rerender(habbits[0].id);
   // togglePopup()
 })();
